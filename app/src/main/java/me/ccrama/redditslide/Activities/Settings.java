@@ -1,6 +1,7 @@
 package me.ccrama.redditslide.Activities;
 
 import android.app.Dialog;
+import android.app.SearchManager;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -9,15 +10,22 @@ import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.widget.SwitchCompat;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.CompoundButton;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.afollestad.materialdialogs.AlertDialogWrapper;
+import com.google.common.base.Strings;
 
 import me.ccrama.redditslide.Authentication;
 import me.ccrama.redditslide.DragSort.ReorderSubreddits;
@@ -60,6 +68,16 @@ public class Settings extends BaseActivity {
         setContentView(R.layout.activity_settings);
         setupAppBar(R.id.toolbar, R.string.title_settings, true, true);
 
+        LayoutInflater inflater = getLayoutInflater();
+        LinearLayout parent = (LinearLayout) findViewById(R.id.settings_parent);
+        LinearLayout child = (LinearLayout) inflater.inflate(R.layout.activity_settings_child, null);
+        parent.addView(child);
+
+        onChildCreate();
+    }
+
+    private void onChildCreate() {
+
         SettingValues.expandedSettings = true;
         setSettingItems();
 
@@ -91,7 +109,6 @@ public class Settings extends BaseActivity {
                 });
             }
         });
-
     }
 
     private void setSettingItems() {
@@ -131,6 +148,42 @@ public class Settings extends BaseActivity {
                 }
             });
         }
+
+        ((EditText) findViewById(R.id.settings_search)).addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                Log.println(Log.DEBUG, "TEST", "You pressed " + s.toString());
+
+                String text = s.toString();
+
+                if (!Strings.isNullOrEmpty(text)){
+                    Log.println(Log.DEBUG, "TEST", "box has something in it!");
+                    View layout = findViewById(R.id.settingsTBD);
+                    if (layout != null) {
+                        ((ViewGroup) layout.getParent()).removeView(layout);
+                    }
+                } else if (findViewById(R.id.settingsTBD) == null) {
+                    Log.println(Log.DEBUG, "TEST", "box is empty/null");
+
+                    LayoutInflater inflater = getLayoutInflater();
+                    LinearLayout child = (LinearLayout) inflater.inflate(R.layout.activity_settings_child, null);
+                    LinearLayout parent = (LinearLayout) findViewById(R.id.settings_parent);
+                    parent.addView(child);
+
+                    onChildCreate();
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
 
         findViewById(R.id.general).setOnClickListener(new OnSingleClickListener() {
             @Override
