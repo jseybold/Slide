@@ -147,6 +147,7 @@ import me.ccrama.redditslide.Constants;
 import me.ccrama.redditslide.ContentType;
 import me.ccrama.redditslide.FDroid;
 import me.ccrama.redditslide.Fragments.CommentPage;
+import me.ccrama.redditslide.Fragments.SettingsGeneralFragment;
 import me.ccrama.redditslide.Fragments.SubmissionsView;
 import me.ccrama.redditslide.HasSeen;
 import me.ccrama.redditslide.ImageFlairs;
@@ -1521,7 +1522,7 @@ public class MainActivity extends BaseActivity
             }
 
             //Need to change the subreddit search method
-            if (SettingsGeneral.searchChanged) {
+            if (SettingsGeneralFragment.searchChanged) {
                 setDrawerSubList();
 
                 if (SettingValues.subredditSearchMethod
@@ -1538,7 +1539,7 @@ public class MainActivity extends BaseActivity
                     setupSubredditSearchToolbar();
                     setDrawerSubList();
                 }
-                SettingsGeneral.searchChanged = false;
+                SettingsGeneralFragment.searchChanged = false;
             }
             SettingsTheme.changed = false;
             Settings.changed = false;

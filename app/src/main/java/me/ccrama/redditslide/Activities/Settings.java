@@ -1,7 +1,6 @@
 package me.ccrama.redditslide.Activities;
 
 import android.app.Dialog;
-import android.app.SearchManager;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -9,6 +8,7 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.SwitchCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -27,9 +27,14 @@ import android.widget.TextView;
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.google.common.base.Strings;
 
+
+import java.io.File;
+
 import me.ccrama.redditslide.Authentication;
 import me.ccrama.redditslide.DragSort.ReorderSubreddits;
 import me.ccrama.redditslide.FDroid;
+import me.ccrama.redditslide.Fragments.FolderChooserDialogCreate;
+import me.ccrama.redditslide.Fragments.SettingsGeneralFragment;
 import me.ccrama.redditslide.R;
 import me.ccrama.redditslide.Reddit;
 import me.ccrama.redditslide.SettingValues;
@@ -41,7 +46,7 @@ import me.ccrama.redditslide.util.OnSingleClickListener;
 /**
  * Created by ccrama on 3/5/2015.
  */
-public class Settings extends BaseActivity {
+public class Settings extends BaseActivity implements FolderChooserDialogCreate.FolderCallback{
     private final static int RESTART_SETTINGS_RESULT = 2;
     private       int                                                scrollY;
     private       SharedPreferences.OnSharedPreferenceChangeListener prefsListener;
@@ -111,6 +116,23 @@ public class Settings extends BaseActivity {
         });
     }
 
+    private String loopViews(ViewGroup view, String text) {
+        for (int i = 0; i < view.getChildCount(); i++) {
+            View v = view.getChildAt(i);
+            if (v instanceof TextView) {
+                if (((TextView) v).getText().toString().toLowerCase().contains(text)) {
+                    return ((TextView) v).getText().toString();
+                }
+            } else if (v instanceof ViewGroup) {
+                String ret = this.loopViews((ViewGroup) v, text);
+                if (!Strings.isNullOrEmpty(ret)) {
+                    return ret;
+                }
+            }
+        }
+        return null;
+    }
+
     private void setSettingItems() {
         View pro = findViewById(R.id.pro);
         if (SettingValues.tabletUI) {
@@ -150,6 +172,7 @@ public class Settings extends BaseActivity {
         }
 
         ((EditText) findViewById(R.id.settings_search)).addTextChangedListener(new TextWatcher() {
+
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
@@ -163,18 +186,68 @@ public class Settings extends BaseActivity {
 
                 if (!Strings.isNullOrEmpty(text)){
                     Log.println(Log.DEBUG, "TEST", "box has something in it!");
-                    View layout = findViewById(R.id.settingsTBD);
+
+                    View layout = findViewById(R.id.settings_child);
                     if (layout != null) {
                         ((ViewGroup) layout.getParent()).removeView(layout);
                     }
-                } else if (findViewById(R.id.settingsTBD) == null) {
+
+                    View layout2 = findViewById(R.id.settings_general_child);
+                    if (layout2 != null) {
+                        ((ViewGroup) layout2.getParent()).removeView(layout2);
+                    }
+
+                    if (findViewById(R.id.settings_general_child) == null) {
+                        ViewGroup child = (ViewGroup) getLayoutInflater().inflate(R.layout.activity_settings_general_child, null);
+                        ((ViewGroup) findViewById(R.id.settings_parent)).addView(child);
+                    }
+
+                    // TODO: Implement a check for top-level TextView's that may potentially contain
+                    // TODO: text that matches our search
+
+                    /* Go through each subview and scan it for matching text, non-matches */
+                    ViewGroup general_settings_parent = (ViewGroup) findViewById(R.id.settings_general_child);
+                    Log.println(Log.DEBUG, "Settings", "Found " + String.valueOf(general_settings_parent.getChildCount()) + " children");
+
+                    for (int i=0; i<general_settings_parent.getChildCount(); i++) {
+
+                        Log.println(Log.DEBUG, "Settings", String.valueOf(i) + ": " + general_settings_parent.getChildAt(i).toString());
+
+                        if (general_settings_parent.getChildAt(i) instanceof ViewGroup) {
+
+                            ViewGroup child = (ViewGroup) general_settings_parent.getChildAt(i);
+                            Log.println(Log.DEBUG, "Settings", "  Processing general/" + child.toString());
+
+                            String matched_string = loopViews(child, text.toLowerCase());
+                            if (Strings.isNullOrEmpty(matched_string)) {
+                                Log.println(Log.DEBUG, "Settings", "    removing ViewGroup: " + child.toString());
+                                general_settings_parent.removeView(child);
+                                i--;
+                            }
+
+                        } else {
+                            /* Get rid of any fluff that isn't an actual setting (ex. headers) */
+                            Log.println(Log.DEBUG, "Settings", "    removing View: " + general_settings_parent.getChildAt(i).toString());
+                            general_settings_parent.removeView(general_settings_parent.getChildAt(i));
+                            i--;
+                        }
+                    }
+
+                    /* Bind actions to the new layout */
+                    SettingsGeneralFragment SGF = new SettingsGeneralFragment(Settings.this);
+                    SGF.Bind();
+
+                } else if (findViewById(R.id.settings_child) == null) {
                     Log.println(Log.DEBUG, "TEST", "box is empty/null");
 
-                    LayoutInflater inflater = getLayoutInflater();
-                    LinearLayout child = (LinearLayout) inflater.inflate(R.layout.activity_settings_child, null);
-                    LinearLayout parent = (LinearLayout) findViewById(R.id.settings_parent);
-                    parent.addView(child);
+                    // TODO: Remove all children before settings_child is removed?
+                    View layout = findViewById(R.id.settings_general_child);
+                    if (layout != null) {
+                        ((ViewGroup) layout.getParent()).removeView(layout);
+                    }
 
+                    ViewGroup child = (ViewGroup) getLayoutInflater().inflate(R.layout.activity_settings_child, null);
+                    ((ViewGroup) findViewById(R.id.settings_parent)).addView(child);
                     onChildCreate();
                 }
             }
@@ -457,6 +530,12 @@ public class Settings extends BaseActivity {
             findViewById(R.id.reddit_settings).setEnabled(false);
             findViewById(R.id.reddit_settings).setAlpha(0.25f);
         }
+    }
+
+    @Override
+    public void onFolderSelection(@NonNull FolderChooserDialogCreate dialog, @NonNull File folder) {
+        SettingsGeneralFragment f = new SettingsGeneralFragment(this);
+        f.onFolderSelection(dialog, folder);
     }
 
     @Override
