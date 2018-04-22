@@ -9,6 +9,7 @@ import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.SwitchCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -50,8 +51,8 @@ public class Settings extends BaseActivity implements FolderChooserDialogCreate.
     private final static int RESTART_SETTINGS_RESULT = 2;
     private       int                                                scrollY;
     private       SharedPreferences.OnSharedPreferenceChangeListener prefsListener;
-    public static boolean                                            changed;
-            //whether or not a Setting was changed
+    private       String                                             prev_text;
+    public static boolean                                            changed;  //whether or not a Setting was changed
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -116,21 +117,48 @@ public class Settings extends BaseActivity implements FolderChooserDialogCreate.
         });
     }
 
-    private String loopViews(ViewGroup view, String text) {
+    private boolean loopViews(ViewGroup view, String text, String indent) {
+
+        boolean foundText = false;
+
         for (int i = 0; i < view.getChildCount(); i++) {
+
+            Log.println(Log.DEBUG, "loopViews",indent +  view.getClass().toString() + " - " + view.getChildAt(i).getClass().toString());
             View v = view.getChildAt(i);
-            if (v instanceof TextView) {
-                if (((TextView) v).getText().toString().toLowerCase().contains(text)) {
-                    return ((TextView) v).getText().toString();
+
+            // Todo: Do we need to check both types here or would one suffice?
+            if (view.getChildAt(i) instanceof TextView || view.getChildAt(i) instanceof AppCompatTextView){
+
+                // Found a label
+                if ( v.getTag() != null && v.getTag().toString().equals("label")) {
+                    Log.println(Log.DEBUG, "loopViews", indent + "Removing label: " + ((TextView) v).getText());
+                    view.removeView(v);
+                    i--;
+                    continue;
                 }
+
+                // Found matching text!
+                if (((TextView) v).getText().toString().toLowerCase().contains(text)) {
+                    Log.println(Log.DEBUG, "loopViews", indent + "Found text! - " + ((TextView) v).getText());
+                    foundText = true;
+                    continue;
+                }
+
+                Log.println(Log.DEBUG, "loopViews", indent + "No match - " + ((TextView) v).getText());
+
             } else if (v instanceof ViewGroup) {
-                String ret = this.loopViews((ViewGroup) v, text);
-                if (!Strings.isNullOrEmpty(ret)) {
-                    return ret;
+                // Look for matching TextView in the ViewGroup, remove the ViewGroup if no match is found
+                if (!this.loopViews((ViewGroup) v, text, indent + "  ")) {
+                    Log.println(Log.DEBUG, "loopViews", indent + "Removing ViewGroup: " + v.getClass().toString());
+                    view.removeView(v);
+                    i--;
+                } else {
+                    foundText = true;
                 }
             }
         }
-        return null;
+
+        return foundText;
     }
 
     private void setSettingItems() {
@@ -180,76 +208,89 @@ public class Settings extends BaseActivity implements FolderChooserDialogCreate.
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                Log.println(Log.DEBUG, "TEST", "You pressed " + s.toString());
+                Log.println(Log.DEBUG, "TEST", "You pressed " + s.toString() + ", prev_text is " + prev_text);
 
                 String text = s.toString();
 
+                /* No idea why, but this event can fire many times when there is no change */
+                if (text.equalsIgnoreCase(prev_text)) {
+                    Log.println(Log.DEBUG, "TEST", "onTextChanged fired, but no change detected!");
+                    return;
+                } else {
+                    // Clear the settings out, then re-add the default top-level settings
+                    ((LinearLayout) findViewById(R.id.settings_parent)).removeAllViews();
+
+                    ((ViewGroup) findViewById(R.id.settings_parent)).addView(
+                            getLayoutInflater().inflate(R.layout.activity_settings_child, null));
+                    onChildCreate();
+                }
+
+                prev_text = text;
+
+                /* The EditView contains text that we can use to search for matching settings */
                 if (!Strings.isNullOrEmpty(text)){
                     Log.println(Log.DEBUG, "TEST", "box has something in it!");
 
-                    View layout = findViewById(R.id.settings_child);
-                    if (layout != null) {
-                        ((ViewGroup) layout.getParent()).removeView(layout);
-                    }
-
-                    View layout2 = findViewById(R.id.settings_general_child);
-                    if (layout2 != null) {
-                        ((ViewGroup) layout2.getParent()).removeView(layout2);
-                    }
-
-                    if (findViewById(R.id.settings_general_child) == null) {
-                        ViewGroup child = (ViewGroup) getLayoutInflater().inflate(R.layout.activity_settings_general_child, null);
-                        ((ViewGroup) findViewById(R.id.settings_parent)).addView(child);
-                    }
-
-                    // TODO: Implement a check for top-level TextView's that may potentially contain
-                    // TODO: text that matches our search
-
-                    /* Go through each subview and scan it for matching text, non-matches */
-                    ViewGroup general_settings_parent = (ViewGroup) findViewById(R.id.settings_general_child);
-                    Log.println(Log.DEBUG, "Settings", "Found " + String.valueOf(general_settings_parent.getChildCount()) + " children");
-
-                    for (int i=0; i<general_settings_parent.getChildCount(); i++) {
-
-                        Log.println(Log.DEBUG, "Settings", String.valueOf(i) + ": " + general_settings_parent.getChildAt(i).toString());
-
-                        if (general_settings_parent.getChildAt(i) instanceof ViewGroup) {
-
-                            ViewGroup child = (ViewGroup) general_settings_parent.getChildAt(i);
-                            Log.println(Log.DEBUG, "Settings", "  Processing general/" + child.toString());
-
-                            String matched_string = loopViews(child, text.toLowerCase());
-                            if (Strings.isNullOrEmpty(matched_string)) {
-                                Log.println(Log.DEBUG, "Settings", "    removing ViewGroup: " + child.toString());
-                                general_settings_parent.removeView(child);
-                                i--;
-                            }
-
-                        } else {
-                            /* Get rid of any fluff that isn't an actual setting (ex. headers) */
-                            Log.println(Log.DEBUG, "Settings", "    removing View: " + general_settings_parent.getChildAt(i).toString());
-                            general_settings_parent.removeView(general_settings_parent.getChildAt(i));
-                            i--;
-                        }
-                    }
-
-                    /* Bind actions to the new layout */
+                    /* SettingsGeneral */
+                    ((ViewGroup) findViewById(R.id.settings_parent)).addView(
+                            getLayoutInflater().inflate(R.layout.activity_settings_general_child, null));
+                    // Todo: Might want to move this object instantiation somewhere else...
                     SettingsGeneralFragment SGF = new SettingsGeneralFragment(Settings.this);
                     SGF.Bind();
 
-                } else if (findViewById(R.id.settings_child) == null) {
-                    Log.println(Log.DEBUG, "TEST", "box is empty/null");
+                    /* MainTheme */
 
-                    // TODO: Remove all children before settings_child is removed?
-                    View layout = findViewById(R.id.settings_general_child);
-                    if (layout != null) {
-                        ((ViewGroup) layout.getParent()).removeView(layout);
+                    /* Font */
+
+                    /* Comments */
+
+                    /* Link Handling */
+
+                    /* History */
+
+                    /* Data Saving */
+
+                    /* Backup & Restore */
+
+                    /* Go through each subview and scan it for matching text, non-matches */
+                    ViewGroup parent = (ViewGroup) findViewById(R.id.settings_parent);
+                    Log.println(Log.DEBUG, "Settings", "settings_parent has " + String.valueOf(parent.getChildCount()) + " children");
+
+                    for (int i=0; i<parent.getChildCount(); i++) {
+
+                        Log.println(Log.DEBUG, "Settings", String.valueOf(i) + ": " + parent.getChildAt(i).toString());
+
+                        /* Remove top-level TextView labels */
+                        if (parent.getChildAt(i) instanceof TextView) {
+                            if (!((TextView) parent.getChildAt(i))
+                                    .getText()
+                                    .toString()
+                                    .toLowerCase()
+                                    .contains(text.toLowerCase())) {
+                                Log.println(Log.DEBUG, "Settings", "Removing TextView: " + ((TextView) parent.getChildAt(i)).getText());
+                                parent.removeView(parent.getChildAt(i));
+                                i--;
+                            }
+                        }
+
+                        /* Go through each ViewGroup and its children recursively,
+                           searching for a TextView with matching text
+                         */
+                        else if (parent.getChildAt(i) instanceof ViewGroup) {
+                            loopViews((ViewGroup) parent.getChildAt(i), text.toLowerCase(), "");
+                        }
+
+//                        /* Get rid of any fluff that isn't an actual setting (ex. headers) */
+//                        else {
+//                            Log.println(Log.DEBUG, "Settings", "    removing View: " + parent.getChildAt(i).toString());
+//                            parent.removeView(parent.getChildAt(i));
+//                            i--;
+//                        }
                     }
-
-                    ViewGroup child = (ViewGroup) getLayoutInflater().inflate(R.layout.activity_settings_child, null);
-                    ((ViewGroup) findViewById(R.id.settings_parent)).addView(child);
-                    onChildCreate();
                 }
+
+                /* Try to clean up the mess we've made */
+                System.gc();
             }
 
             @Override

@@ -14,6 +14,7 @@
         android:paddingStart="16dp"
         android:paddingTop="16dp"
         android:text="@string/display"
+        android:tag="label"
         android:textColor="?attr/colorAccent" />
 
     <RelativeLayout
@@ -178,6 +179,7 @@
         android:paddingStart="16dp"
         android:paddingTop="16dp"
         android:text="@string/settings_title_notifications"
+        android:tag="label"
         android:textColor="?attr/colorAccent" />
 
     <TextView
@@ -187,6 +189,7 @@
         android:paddingEnd="16dp"
         android:paddingStart="16dp"
         android:text="Notifications include Inbox replies, Mod Mail, and Subreddit post notifications."
+        android:tag="label"
         android:textColor="?attr/fontColor"
         android:textSize="12sp" />
 
@@ -205,6 +208,7 @@
         android:paddingEnd="16dp"
         android:paddingStart="16dp"
         android:text="@string/install_notif_piggyback"
+        android:tag="label"
         android:textColor="?attr/fontColor"
         android:textSize="12sp"
         android:visibility="gone" />
@@ -346,6 +350,7 @@
         android:paddingStart="16dp"
         android:paddingTop="16dp"
         android:text="@string/sorting"
+        android:tag="label"
         android:textColor="?attr/colorAccent" />
 
     <RelativeLayout
@@ -429,6 +434,7 @@
         android:paddingStart="16dp"
         android:paddingTop="16dp"
         android:text="@string/image_downloads"
+        android:tag="label"
         android:textColor="?attr/colorAccent" />
 
     <RelativeLayout
@@ -523,6 +529,7 @@
         android:paddingStart="16dp"
         android:paddingTop="16dp"
         android:text="@string/settings_section_other"
+        android:tag="label"
         android:textColor="?attr/colorAccent" />
 
     <RelativeLayout

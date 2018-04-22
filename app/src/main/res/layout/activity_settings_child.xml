@@ -21,6 +21,7 @@
             android:paddingEnd="16dp"
             android:paddingStart="16dp"
             android:paddingTop="16dp"
+            android:tag="label"
             android:text="@string/settings_section_general"
             android:textColor="?attr/colorAccent"
             android:textSize="14sp"
@@ -140,6 +141,7 @@
             android:paddingEnd="16dp"
             android:paddingStart="16dp"
             android:paddingTop="16dp"
+            android:tag="label"
             android:text="@string/settings_section_appearance"
             android:textColor="?attr/colorAccent"
             android:textSize="14sp"
@@ -283,6 +285,7 @@
             android:paddingStart="16dp"
             android:paddingTop="16dp"
             android:text="@string/settings_section_content"
+            android:tag="label"
             android:textColor="?attr/colorAccent"
             android:textSize="14sp"
             android:textStyle="bold" />
@@ -424,6 +427,7 @@
             android:paddingStart="16dp"
             android:paddingTop="16dp"
             android:text="@string/settings_section_other"
+            android:tag="label"
             android:textColor="?attr/colorAccent"
             android:textSize="14sp"
             android:textStyle="bold" />
