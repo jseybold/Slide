@@ -35,6 +35,7 @@ import me.ccrama.redditslide.Authentication;
 import me.ccrama.redditslide.DragSort.ReorderSubreddits;
 import me.ccrama.redditslide.FDroid;
 import me.ccrama.redditslide.Fragments.FolderChooserDialogCreate;
+import me.ccrama.redditslide.Fragments.SettingsCommentsFragment;
 import me.ccrama.redditslide.Fragments.SettingsFragment;
 import me.ccrama.redditslide.Fragments.SettingsGeneralFragment;
 import me.ccrama.redditslide.Fragments.SettingsThemeFragment;
@@ -98,11 +99,11 @@ public class Settings extends BaseActivity
     }
 
     private void BuildLayout(String text) {
-        // Clear the settings out, then re-add the default top-level settings
-        ((LinearLayout) findViewById(R.id.settings_parent)).removeAllViews();
+        LinearLayout parent = (LinearLayout) findViewById(R.id.settings_parent);
 
-        ((ViewGroup) findViewById(R.id.settings_parent)).addView(
-                getLayoutInflater().inflate(R.layout.activity_settings_child, null));
+        // Clear the settings out, then re-add the default top-level settings
+        parent.removeAllViews();
+        parent.addView(getLayoutInflater().inflate(R.layout.activity_settings_child, null));
         Bind();
 
         /* The EditView contains text that we can use to search for matching settings */
@@ -110,22 +111,21 @@ public class Settings extends BaseActivity
             Log.println(Log.DEBUG, "TEST", "box has something in it!");
 
             /* SettingsGeneral - "General" */
-            ((ViewGroup) findViewById(R.id.settings_parent)).addView(
+            parent.addView(
                     getLayoutInflater().inflate(R.layout.activity_settings_general_child, null));
-            // Todo: Might want to move this object instantiation somewhere else...
-            SettingsGeneralFragment SGF = new SettingsGeneralFragment(Settings.this);
-            SGF.Bind();
+            new SettingsGeneralFragment(Settings.this, true);
 
             /* SettingsTheme - "Main Theme" */
-            ((ViewGroup) findViewById(R.id.settings_parent)).addView(
+            parent.addView(
                     getLayoutInflater().inflate(R.layout.activity_settings_theme_child, null));
-            // Todo: Might want to move this object instantiation somewhere else...
-            SettingsThemeFragment STF = new SettingsThemeFragment(Settings.this);
-            STF.Bind();
+            new SettingsThemeFragment(Settings.this, true);
 
             /* Font */
 
-            /* Comments */
+            /* SettingsComments - "Comments" */
+            parent.addView(
+                    getLayoutInflater().inflate(R.layout.activity_settings_comments_child, null));
+            new SettingsCommentsFragment(Settings.this, true);
 
             /* Link Handling */
 
@@ -136,7 +136,6 @@ public class Settings extends BaseActivity
             /* Backup & Restore */
 
             /* Go through each subview and scan it for matching text, non-matches */
-            ViewGroup parent = (ViewGroup) findViewById(R.id.settings_parent);
             Log.println(Log.DEBUG, "Settings", "settings_parent has " + String.valueOf(parent.getChildCount()) + " children");
 
             for (int i=0; i<parent.getChildCount(); i++) {
@@ -156,19 +155,19 @@ public class Settings extends BaseActivity
                     }
                 }
 
-                        /* Go through each ViewGroup and its children recursively,
-                           searching for a TextView with matching text
-                         */
+                /* Go through each ViewGroup and its children recursively,
+                   searching for a TextView with matching text
+                 */
                 else if (parent.getChildAt(i) instanceof ViewGroup) {
                     loopViews((ViewGroup) parent.getChildAt(i), text.toLowerCase(), "");
                 }
 
-//                        /* Get rid of any fluff that isn't an actual setting (ex. headers) */
-//                        else {
-//                            Log.println(Log.DEBUG, "Settings", "    removing View: " + parent.getChildAt(i).toString());
-//                            parent.removeView(parent.getChildAt(i));
-//                            i--;
-//                        }
+//                /* Get rid of any fluff that isn't an actual setting (ex. headers) */
+//                else {
+//                    Log.println(Log.DEBUG, "Settings", "    removing View: " + parent.getChildAt(i).toString());
+//                    parent.removeView(parent.getChildAt(i));
+//                    i--;
+//                }
             }
         }
 

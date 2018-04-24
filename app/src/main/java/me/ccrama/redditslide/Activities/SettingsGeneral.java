@@ -22,11 +22,10 @@ public class SettingsGeneral extends BaseActivityAnim
         setContentView(R.layout.activity_settings_general);
         setupAppBar(R.id.toolbar, R.string.settings_title_general, true, true);
 
-        ViewGroup child = (ViewGroup) getLayoutInflater().inflate(R.layout.activity_settings_general_child, null);
-        ((ViewGroup) findViewById(R.id.settings_general)).addView(child);
+        ((ViewGroup) findViewById(R.id.settings_general)).addView(
+                getLayoutInflater().inflate(R.layout.activity_settings_general_child, null));
 
-        SettingsGeneralFragment f = new SettingsGeneralFragment(this);
-        f.Bind();
+        new SettingsGeneralFragment(this, true);
     }
 
     @Override

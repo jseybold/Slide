@@ -62,7 +62,12 @@ public class SettingsGeneralFragment<ActivityType extends AppCompatActivity & Fo
     public static boolean searchChanged; //whether or not the subreddit search method changed
 
     public SettingsGeneralFragment(ActivityType context) {
+        this(context, false);
+    }
+
+    public SettingsGeneralFragment(ActivityType context, boolean autoBind) {
         this.context = context;
+        if (autoBind) Bind();
     }
 
     public static void setupNotificationSettings(View dialoglayout, final Activity context) {
@@ -295,13 +300,13 @@ public class SettingsGeneralFragment<ActivityType extends AppCompatActivity & Fo
         }
 
         //FAB multi choice//
-        if (context.findViewById(R.id.fab_current) != null && context.findViewById(R.id.fab) != null) {
+        if (context.findViewById(R.id.fab_current) != null && context.findViewById(R.id.settings_general_fab) != null) {
             ((TextView) context.findViewById(R.id.fab_current)).setText(
                     SettingValues.fab ? (SettingValues.fabType == Constants.FAB_DISMISS ? context.getString(
                             R.string.fab_hide) : context.getString(R.string.fab_create))
                             : context.getString(R.string.fab_disabled));
 
-            context.findViewById(R.id.fab).setOnClickListener(new View.OnClickListener() {
+            context.findViewById(R.id.settings_general_fab).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     PopupMenu popup = new PopupMenu(context, v);

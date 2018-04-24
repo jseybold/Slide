@@ -50,7 +50,12 @@ public class SettingsThemeFragment<ActivityType extends BaseActivity & SettingsF
     int back;
 
     public SettingsThemeFragment(ActivityType context) {
+        this(context, false);
+    }
+
+    public SettingsThemeFragment(ActivityType context, boolean autoBind) {
         this.context = context;
+        if (autoBind) Bind();
     }
 
     public void Bind() {

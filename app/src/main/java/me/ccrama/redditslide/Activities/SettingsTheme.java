@@ -23,8 +23,7 @@ public class SettingsTheme extends BaseActivityAnim implements SettingsFragment.
         ((ViewGroup) findViewById(R.id.settings_theme)).addView(
                 getLayoutInflater().inflate(R.layout.activity_settings_theme_child, null));
 
-        SettingsThemeFragment f = new SettingsThemeFragment(this);
-        f.Bind();
+        new SettingsThemeFragment(this, true);
     }
 
     @Override
