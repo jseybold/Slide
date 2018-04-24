@@ -36,6 +36,7 @@ import me.ccrama.redditslide.DragSort.ReorderSubreddits;
 import me.ccrama.redditslide.FDroid;
 import me.ccrama.redditslide.Fragments.FolderChooserDialogCreate;
 import me.ccrama.redditslide.Fragments.SettingsCommentsFragment;
+import me.ccrama.redditslide.Fragments.SettingsFontFragment;
 import me.ccrama.redditslide.Fragments.SettingsFragment;
 import me.ccrama.redditslide.Fragments.SettingsGeneralFragment;
 import me.ccrama.redditslide.Fragments.SettingsThemeFragment;
@@ -113,19 +114,22 @@ public class Settings extends BaseActivity
             /* SettingsGeneral - "General" */
             parent.addView(
                     getLayoutInflater().inflate(R.layout.activity_settings_general_child, null));
-            new SettingsGeneralFragment(Settings.this, true);
+            new SettingsGeneralFragment(this, true);
 
             /* SettingsTheme - "Main Theme" */
             parent.addView(
                     getLayoutInflater().inflate(R.layout.activity_settings_theme_child, null));
-            new SettingsThemeFragment(Settings.this, true);
+            new SettingsThemeFragment(this, true);
 
             /* Font */
+            parent.addView(
+                    getLayoutInflater().inflate(R.layout.activity_settings_font_child, null));
+            new SettingsFontFragment(this, true);
 
             /* SettingsComments - "Comments" */
             parent.addView(
                     getLayoutInflater().inflate(R.layout.activity_settings_comments_child, null));
-            new SettingsCommentsFragment(Settings.this, true);
+            new SettingsCommentsFragment(this, true);
 
             /* Link Handling */
 
