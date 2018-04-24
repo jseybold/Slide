@@ -35,7 +35,9 @@ import me.ccrama.redditslide.Authentication;
 import me.ccrama.redditslide.DragSort.ReorderSubreddits;
 import me.ccrama.redditslide.FDroid;
 import me.ccrama.redditslide.Fragments.FolderChooserDialogCreate;
+import me.ccrama.redditslide.Fragments.SettingsFragment;
 import me.ccrama.redditslide.Fragments.SettingsGeneralFragment;
+import me.ccrama.redditslide.Fragments.SettingsThemeFragment;
 import me.ccrama.redditslide.R;
 import me.ccrama.redditslide.Reddit;
 import me.ccrama.redditslide.SettingValues;
@@ -47,7 +49,9 @@ import me.ccrama.redditslide.util.OnSingleClickListener;
 /**
  * Created by ccrama on 3/5/2015.
  */
-public class Settings extends BaseActivity implements FolderChooserDialogCreate.FolderCallback{
+public class Settings extends BaseActivity
+        implements FolderChooserDialogCreate.FolderCallback, SettingsFragment.RestartActivity {
+
     private final static int RESTART_SETTINGS_RESULT = 2;
     private       int                                                scrollY;
     private       SharedPreferences.OnSharedPreferenceChangeListener prefsListener;
@@ -74,15 +78,105 @@ public class Settings extends BaseActivity implements FolderChooserDialogCreate.
         setContentView(R.layout.activity_settings);
         setupAppBar(R.id.toolbar, R.string.title_settings, true, true);
 
-        LayoutInflater inflater = getLayoutInflater();
-        LinearLayout parent = (LinearLayout) findViewById(R.id.settings_parent);
-        LinearLayout child = (LinearLayout) inflater.inflate(R.layout.activity_settings_child, null);
-        parent.addView(child);
+        if (getIntent() != null & !Strings.isNullOrEmpty(getIntent().getStringExtra("prev_text"))) {
+            prev_text = getIntent().getStringExtra("prev_text");
+        } else if (savedInstanceState != null) {
+            prev_text = savedInstanceState.getString("prev_text");
+        }
 
-        onChildCreate();
+        if (!Strings.isNullOrEmpty(prev_text)) {
+            ((EditText) findViewById(R.id.settings_search)).setText(prev_text);
+        }
+
+        BuildLayout(prev_text);
     }
 
-    private void onChildCreate() {
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putString("prev_text", prev_text);
+        super.onSaveInstanceState(outState);
+    }
+
+    private void BuildLayout(String text) {
+        // Clear the settings out, then re-add the default top-level settings
+        ((LinearLayout) findViewById(R.id.settings_parent)).removeAllViews();
+
+        ((ViewGroup) findViewById(R.id.settings_parent)).addView(
+                getLayoutInflater().inflate(R.layout.activity_settings_child, null));
+        Bind();
+
+        /* The EditView contains text that we can use to search for matching settings */
+        if (!Strings.isNullOrEmpty(text)){
+            Log.println(Log.DEBUG, "TEST", "box has something in it!");
+
+            /* SettingsGeneral - "General" */
+            ((ViewGroup) findViewById(R.id.settings_parent)).addView(
+                    getLayoutInflater().inflate(R.layout.activity_settings_general_child, null));
+            // Todo: Might want to move this object instantiation somewhere else...
+            SettingsGeneralFragment SGF = new SettingsGeneralFragment(Settings.this);
+            SGF.Bind();
+
+            /* SettingsTheme - "Main Theme" */
+            ((ViewGroup) findViewById(R.id.settings_parent)).addView(
+                    getLayoutInflater().inflate(R.layout.activity_settings_theme_child, null));
+            // Todo: Might want to move this object instantiation somewhere else...
+            SettingsThemeFragment STF = new SettingsThemeFragment(Settings.this);
+            STF.Bind();
+
+            /* Font */
+
+            /* Comments */
+
+            /* Link Handling */
+
+            /* History */
+
+            /* Data Saving */
+
+            /* Backup & Restore */
+
+            /* Go through each subview and scan it for matching text, non-matches */
+            ViewGroup parent = (ViewGroup) findViewById(R.id.settings_parent);
+            Log.println(Log.DEBUG, "Settings", "settings_parent has " + String.valueOf(parent.getChildCount()) + " children");
+
+            for (int i=0; i<parent.getChildCount(); i++) {
+
+                Log.println(Log.DEBUG, "Settings", String.valueOf(i) + ": " + parent.getChildAt(i).toString());
+
+                /* Remove top-level TextView labels */
+                if (parent.getChildAt(i) instanceof TextView) {
+                    if (!((TextView) parent.getChildAt(i))
+                            .getText()
+                            .toString()
+                            .toLowerCase()
+                            .contains(text.toLowerCase())) {
+                        Log.println(Log.DEBUG, "Settings", "Removing TextView: " + ((TextView) parent.getChildAt(i)).getText());
+                        parent.removeView(parent.getChildAt(i));
+                        i--;
+                    }
+                }
+
+                        /* Go through each ViewGroup and its children recursively,
+                           searching for a TextView with matching text
+                         */
+                else if (parent.getChildAt(i) instanceof ViewGroup) {
+                    loopViews((ViewGroup) parent.getChildAt(i), text.toLowerCase(), "");
+                }
+
+//                        /* Get rid of any fluff that isn't an actual setting (ex. headers) */
+//                        else {
+//                            Log.println(Log.DEBUG, "Settings", "    removing View: " + parent.getChildAt(i).toString());
+//                            parent.removeView(parent.getChildAt(i));
+//                            i--;
+//                        }
+            }
+        }
+
+        /* Try to clean up the mess we've made */
+        System.gc();
+    }
+
+    private void Bind() {
 
         SettingValues.expandedSettings = true;
         setSettingItems();
@@ -209,88 +303,16 @@ public class Settings extends BaseActivity implements FolderChooserDialogCreate.
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 Log.println(Log.DEBUG, "TEST", "You pressed " + s.toString() + ", prev_text is " + prev_text);
-
-                String text = s.toString();
+                String text = s.toString().trim();
 
                 /* No idea why, but this event can fire many times when there is no change */
                 if (text.equalsIgnoreCase(prev_text)) {
                     Log.println(Log.DEBUG, "TEST", "onTextChanged fired, but no change detected!");
                     return;
                 } else {
-                    // Clear the settings out, then re-add the default top-level settings
-                    ((LinearLayout) findViewById(R.id.settings_parent)).removeAllViews();
-
-                    ((ViewGroup) findViewById(R.id.settings_parent)).addView(
-                            getLayoutInflater().inflate(R.layout.activity_settings_child, null));
-                    onChildCreate();
+                    BuildLayout(text);
                 }
-
                 prev_text = text;
-
-                /* The EditView contains text that we can use to search for matching settings */
-                if (!Strings.isNullOrEmpty(text)){
-                    Log.println(Log.DEBUG, "TEST", "box has something in it!");
-
-                    /* SettingsGeneral */
-                    ((ViewGroup) findViewById(R.id.settings_parent)).addView(
-                            getLayoutInflater().inflate(R.layout.activity_settings_general_child, null));
-                    // Todo: Might want to move this object instantiation somewhere else...
-                    SettingsGeneralFragment SGF = new SettingsGeneralFragment(Settings.this);
-                    SGF.Bind();
-
-                    /* MainTheme */
-
-                    /* Font */
-
-                    /* Comments */
-
-                    /* Link Handling */
-
-                    /* History */
-
-                    /* Data Saving */
-
-                    /* Backup & Restore */
-
-                    /* Go through each subview and scan it for matching text, non-matches */
-                    ViewGroup parent = (ViewGroup) findViewById(R.id.settings_parent);
-                    Log.println(Log.DEBUG, "Settings", "settings_parent has " + String.valueOf(parent.getChildCount()) + " children");
-
-                    for (int i=0; i<parent.getChildCount(); i++) {
-
-                        Log.println(Log.DEBUG, "Settings", String.valueOf(i) + ": " + parent.getChildAt(i).toString());
-
-                        /* Remove top-level TextView labels */
-                        if (parent.getChildAt(i) instanceof TextView) {
-                            if (!((TextView) parent.getChildAt(i))
-                                    .getText()
-                                    .toString()
-                                    .toLowerCase()
-                                    .contains(text.toLowerCase())) {
-                                Log.println(Log.DEBUG, "Settings", "Removing TextView: " + ((TextView) parent.getChildAt(i)).getText());
-                                parent.removeView(parent.getChildAt(i));
-                                i--;
-                            }
-                        }
-
-                        /* Go through each ViewGroup and its children recursively,
-                           searching for a TextView with matching text
-                         */
-                        else if (parent.getChildAt(i) instanceof ViewGroup) {
-                            loopViews((ViewGroup) parent.getChildAt(i), text.toLowerCase(), "");
-                        }
-
-//                        /* Get rid of any fluff that isn't an actual setting (ex. headers) */
-//                        else {
-//                            Log.println(Log.DEBUG, "Settings", "    removing View: " + parent.getChildAt(i).toString());
-//                            parent.removeView(parent.getChildAt(i));
-//                            i--;
-//                        }
-                    }
-                }
-
-                /* Try to clean up the mess we've made */
-                System.gc();
             }
 
             @Override
@@ -373,7 +395,7 @@ public class Settings extends BaseActivity implements FolderChooserDialogCreate.
             }
         });
 
-        findViewById(R.id.theme).setOnClickListener(new OnSingleClickListener() {
+        findViewById(R.id.maintheme).setOnClickListener(new OnSingleClickListener() {
             @Override
             public void onSingleClick(View v) {
 
@@ -580,8 +602,21 @@ public class Settings extends BaseActivity implements FolderChooserDialogCreate.
     }
 
     @Override
+    public void restartActivity() {
+        Intent i = new Intent(this, Settings.class);
+        i.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+        i.putExtra("prev_text", prev_text);
+        startActivity(i);
+        overridePendingTransition(0, 0);
+
+        finish();
+        overridePendingTransition(0, 0);
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
         SettingValues.prefs.unregisterOnSharedPreferenceChangeListener(prefsListener);
     }
+
 }

@@ -148,6 +148,7 @@ import me.ccrama.redditslide.ContentType;
 import me.ccrama.redditslide.FDroid;
 import me.ccrama.redditslide.Fragments.CommentPage;
 import me.ccrama.redditslide.Fragments.SettingsGeneralFragment;
+import me.ccrama.redditslide.Fragments.SettingsThemeFragment;
 import me.ccrama.redditslide.Fragments.SubmissionsView;
 import me.ccrama.redditslide.HasSeen;
 import me.ccrama.redditslide.ImageFlairs;
@@ -1513,11 +1514,11 @@ public class MainActivity extends BaseActivity
             setToolbarClick();
         }*/
         //Only refresh the view if a Setting was altered
-        if (Settings.changed || SettingsTheme.changed) {
+        if (Settings.changed || SettingsThemeFragment.changed) {
 
             reloadSubs();
             //If the user changed a Setting regarding the app's theme, restartTheme()
-            if (SettingsTheme.changed /* todo maybe later || (usedArray != null && usedArray.size() != UserSubscriptions.getSubscriptions(this).size())*/) {
+            if (SettingsThemeFragment.changed /* todo maybe later || (usedArray != null && usedArray.size() != UserSubscriptions.getSubscriptions(this).size())*/) {
                 restartTheme();
             }
 
@@ -1541,7 +1542,7 @@ public class MainActivity extends BaseActivity
                 }
                 SettingsGeneralFragment.searchChanged = false;
             }
-            SettingsTheme.changed = false;
+            SettingsThemeFragment.changed = false;
             Settings.changed = false;
             setToolbarClick();
         }

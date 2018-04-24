@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.devspark.robototextview.widget.RobotoRadioButton;
 
+import me.ccrama.redditslide.Fragments.SettingsThemeFragment;
 import me.ccrama.redditslide.R;
 import me.ccrama.redditslide.SettingValues;
 import me.ccrama.redditslide.Visuals.FontPreferences;
@@ -67,7 +68,7 @@ public class SettingsFont extends BaseActivityAnim {
                         new FontPreferences(SettingsFont.this).setCommentFontStyle(
                                 FontPreferences.FontStyleComment.valueOf(getFontName(item.getItemId())));
                         colorComment.setText(new FontPreferences(SettingsFont.this).getCommentFontStyle().getTitle());
-                        SettingsTheme.changed = true;
+                        SettingsThemeFragment.changed = true;
                         return true;
                     }
                 });
@@ -96,7 +97,7 @@ public class SettingsFont extends BaseActivityAnim {
                         new FontPreferences(SettingsFont.this).setPostFontStyle(
                                 FontPreferences.FontStyle.valueOf(getFontName(item.getItemId())));
                         colorPost.setText(new FontPreferences(SettingsFont.this).getPostFontStyle().getTitle());
-                        SettingsTheme.changed = true;
+                        SettingsThemeFragment.changed = true;
                         return true;
                     }
                 });
@@ -127,7 +128,7 @@ public class SettingsFont extends BaseActivityAnim {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    SettingsTheme.changed = true;
+                    SettingsThemeFragment.changed = true;
                     new FontPreferences(SettingsFont.this).setCommentFont(FontPreferences.FontTypeComment.Condensed);
                 }
             }
@@ -136,7 +137,7 @@ public class SettingsFont extends BaseActivityAnim {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    SettingsTheme.changed = true;
+                    SettingsThemeFragment.changed = true;
                     new FontPreferences(SettingsFont.this).setCommentFont(FontPreferences.FontTypeComment.Slab);
                 }
             }
@@ -145,7 +146,7 @@ public class SettingsFont extends BaseActivityAnim {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    SettingsTheme.changed = true;
+                    SettingsThemeFragment.changed = true;
                     new FontPreferences(SettingsFont.this).setCommentFont(FontPreferences.FontTypeComment.Regular);
                 }
             }
@@ -154,7 +155,7 @@ public class SettingsFont extends BaseActivityAnim {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    SettingsTheme.changed = true;
+                    SettingsThemeFragment.changed = true;
                     new FontPreferences(SettingsFont.this).setCommentFont(FontPreferences.FontTypeComment.Light);
                 }
             }
@@ -163,7 +164,7 @@ public class SettingsFont extends BaseActivityAnim {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    SettingsTheme.changed = true;
+                    SettingsThemeFragment.changed = true;
                     new FontPreferences(SettingsFont.this).setCommentFont(FontPreferences.FontTypeComment.System);
                 }
             }
@@ -204,7 +205,7 @@ public class SettingsFont extends BaseActivityAnim {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    SettingsTheme.changed = true;
+                    SettingsThemeFragment.changed = true;
                     new FontPreferences(SettingsFont.this).setTitleFont(FontPreferences.FontTypeTitle.CondensedReg);
                 }
             }
@@ -213,7 +214,7 @@ public class SettingsFont extends BaseActivityAnim {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    SettingsTheme.changed = true;
+                    SettingsThemeFragment.changed = true;
                     new FontPreferences(SettingsFont.this).setTitleFont(FontPreferences.FontTypeTitle.SlabReg);
                 }
             }
@@ -222,7 +223,7 @@ public class SettingsFont extends BaseActivityAnim {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    SettingsTheme.changed = true;
+                    SettingsThemeFragment.changed = true;
                     new FontPreferences(SettingsFont.this).setTitleFont(FontPreferences.FontTypeTitle.Condensed);
                 }
             }
@@ -231,7 +232,7 @@ public class SettingsFont extends BaseActivityAnim {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    SettingsTheme.changed = true;
+                    SettingsThemeFragment.changed = true;
                     new FontPreferences(SettingsFont.this).setTitleFont(FontPreferences.FontTypeTitle.Bold);
                 }
             }
@@ -240,7 +241,7 @@ public class SettingsFont extends BaseActivityAnim {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    SettingsTheme.changed = true;
+                    SettingsThemeFragment.changed = true;
                     new FontPreferences(SettingsFont.this).setTitleFont(FontPreferences.FontTypeTitle.Medium);
                 }
             }
@@ -249,7 +250,7 @@ public class SettingsFont extends BaseActivityAnim {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    SettingsTheme.changed = true;
+                    SettingsThemeFragment.changed = true;
                     new FontPreferences(SettingsFont.this).setTitleFont(FontPreferences.FontTypeTitle.Slab);
                 }
             }
@@ -258,7 +259,7 @@ public class SettingsFont extends BaseActivityAnim {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    SettingsTheme.changed = true;
+                    SettingsThemeFragment.changed = true;
                     new FontPreferences(SettingsFont.this).setTitleFont(FontPreferences.FontTypeTitle.Regular);
                 }
             }
@@ -267,7 +268,7 @@ public class SettingsFont extends BaseActivityAnim {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    SettingsTheme.changed = true;
+                    SettingsThemeFragment.changed = true;
                     new FontPreferences(SettingsFont.this).setTitleFont(FontPreferences.FontTypeTitle.Light);
                 }
             }
@@ -276,7 +277,7 @@ public class SettingsFont extends BaseActivityAnim {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    SettingsTheme.changed = true;
+                    SettingsThemeFragment.changed = true;
                     new FontPreferences(SettingsFont.this).setTitleFont(FontPreferences.FontTypeTitle.System);
                 }
             }
@@ -285,7 +286,7 @@ public class SettingsFont extends BaseActivityAnim {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    SettingsTheme.changed = true;
+                    SettingsThemeFragment.changed = true;
                     new FontPreferences(SettingsFont.this).setTitleFont(FontPreferences.FontTypeTitle.CondensedBold);
                 }
             }

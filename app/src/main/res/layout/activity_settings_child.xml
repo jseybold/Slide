@@ -148,7 +148,7 @@
             android:textStyle="bold" />
 
         <LinearLayout
-            android:id="@+id/theme"
+            android:id="@+id/maintheme"
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:background="?android:selectableItemBackground"

@@ -25,6 +25,7 @@ import java.util.Map;
 import me.ccrama.redditslide.Autocache.AutoCacheScheduler;
 import me.ccrama.redditslide.ColorPreferences;
 import me.ccrama.redditslide.CommentCacheAsync;
+import me.ccrama.redditslide.Fragments.SettingsThemeFragment;
 import me.ccrama.redditslide.OfflineSubreddit;
 import me.ccrama.redditslide.R;
 import me.ccrama.redditslide.Reddit;
@@ -44,7 +45,7 @@ public class ManageOfflineContent extends BaseActivityAnim {
         applyColorTheme();
         setContentView(R.layout.activity_manage_history);
         setupAppBar(R.id.toolbar, R.string.manage_offline_content, true, true);
-        if (!NetworkUtil.isConnected(this)) SettingsTheme.changed = true;
+        if (!NetworkUtil.isConnected(this)) SettingsThemeFragment.changed = true;
         findViewById(R.id.clear_all).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

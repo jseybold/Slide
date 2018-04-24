@@ -201,7 +201,7 @@ public class SettingsGeneralFragment<ActivityType extends AppCompatActivity & Fo
                 single.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                     @Override
                     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                        SettingsTheme.changed = true;
+                        SettingsThemeFragment.changed = true;
                         SettingValues.immersiveMode = isChecked;
                         SettingValues.prefs.edit()
                                 .putBoolean(SettingValues.PREF_IMMERSIVE_MODE, isChecked)
@@ -219,7 +219,7 @@ public class SettingsGeneralFragment<ActivityType extends AppCompatActivity & Fo
                 single.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                     @Override
                     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                        SettingsTheme.changed = true;
+                        SettingsThemeFragment.changed = true;
                         SettingValues.overrideLanguage = isChecked;
                         SettingValues.prefs.edit()
                                 .putBoolean(SettingValues.PREF_OVERRIDE_LANGUAGE, isChecked)
