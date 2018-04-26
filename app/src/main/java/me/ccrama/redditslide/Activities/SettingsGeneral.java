@@ -16,6 +16,8 @@ import me.ccrama.redditslide.R;
 public class SettingsGeneral extends BaseActivityAnim
         implements FolderChooserDialogCreate.FolderCallback {
 
+    private SettingsGeneralFragment fragment = new SettingsGeneralFragment(this);
+
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         applyColorTheme();
@@ -25,13 +27,12 @@ public class SettingsGeneral extends BaseActivityAnim
         ((ViewGroup) findViewById(R.id.settings_general)).addView(
                 getLayoutInflater().inflate(R.layout.activity_settings_general_child, null));
 
-        new SettingsGeneralFragment(this, true);
+        fragment.Bind();
     }
 
     @Override
     public void onFolderSelection(@NonNull FolderChooserDialogCreate dialog, @NonNull File folder) {
-        SettingsGeneralFragment f = new SettingsGeneralFragment(this);
-        f.onFolderSelection(dialog, folder);
+        fragment.onFolderSelection(dialog, folder);
     }
 
     @Override

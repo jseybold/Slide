@@ -8,6 +8,8 @@ import me.ccrama.redditslide.R;
 
 public class SettingsComments extends BaseActivityAnim {
 
+    private SettingsCommentsFragment fragment = new SettingsCommentsFragment(this);
+
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         applyColorTheme();
@@ -17,7 +19,7 @@ public class SettingsComments extends BaseActivityAnim {
         ((ViewGroup) findViewById(R.id.settings_comments)).addView(
                 getLayoutInflater().inflate(R.layout.activity_settings_comments_child, null));
 
-        new SettingsCommentsFragment(this, true);
+        fragment.Bind();
     }
 
 }

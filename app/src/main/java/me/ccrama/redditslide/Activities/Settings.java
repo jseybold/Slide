@@ -36,9 +36,12 @@ import me.ccrama.redditslide.DragSort.ReorderSubreddits;
 import me.ccrama.redditslide.FDroid;
 import me.ccrama.redditslide.Fragments.FolderChooserDialogCreate;
 import me.ccrama.redditslide.Fragments.SettingsCommentsFragment;
+import me.ccrama.redditslide.Fragments.SettingsDataFragment;
 import me.ccrama.redditslide.Fragments.SettingsFontFragment;
 import me.ccrama.redditslide.Fragments.SettingsFragment;
 import me.ccrama.redditslide.Fragments.SettingsGeneralFragment;
+import me.ccrama.redditslide.Fragments.SettingsHandlingFragment;
+import me.ccrama.redditslide.Fragments.SettingsHistoryFragment;
 import me.ccrama.redditslide.Fragments.SettingsThemeFragment;
 import me.ccrama.redditslide.R;
 import me.ccrama.redditslide.Reddit;
@@ -59,6 +62,14 @@ public class Settings extends BaseActivity
     private       SharedPreferences.OnSharedPreferenceChangeListener prefsListener;
     private       String                                             prev_text;
     public static boolean                                            changed;  //whether or not a Setting was changed
+
+    private SettingsGeneralFragment  mSettingsGeneralFragment  = new SettingsGeneralFragment(this);
+    private SettingsThemeFragment    mSettingsThemeFragment    = new SettingsThemeFragment(this);
+    private SettingsFontFragment     mSettingsFontFragment     = new SettingsFontFragment(this);
+    private SettingsCommentsFragment mSettingsCommentsFragment = new SettingsCommentsFragment(this);
+    private SettingsHandlingFragment mSettingsHandlingFragment = new SettingsHandlingFragment(this);
+    private SettingsHistoryFragment  mSettingsHistoryFragment  = new SettingsHistoryFragment(this);
+    private SettingsDataFragment     mSettingsDataFragment     = new SettingsDataFragment(this);
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -109,33 +120,37 @@ public class Settings extends BaseActivity
 
         /* The EditView contains text that we can use to search for matching settings */
         if (!Strings.isNullOrEmpty(text)){
+            LayoutInflater inflater = getLayoutInflater();
+
             Log.println(Log.DEBUG, "TEST", "box has something in it!");
 
             /* SettingsGeneral - "General" */
-            parent.addView(
-                    getLayoutInflater().inflate(R.layout.activity_settings_general_child, null));
-            new SettingsGeneralFragment(this, true);
+            parent.addView(inflater.inflate(R.layout.activity_settings_general_child, null));
+            mSettingsGeneralFragment.Bind();
 
             /* SettingsTheme - "Main Theme" */
-            parent.addView(
-                    getLayoutInflater().inflate(R.layout.activity_settings_theme_child, null));
-            new SettingsThemeFragment(this, true);
+            parent.addView(inflater.inflate(R.layout.activity_settings_theme_child, null));
+            mSettingsThemeFragment.Bind();
 
-            /* Font */
-            parent.addView(
-                    getLayoutInflater().inflate(R.layout.activity_settings_font_child, null));
-            new SettingsFontFragment(this, true);
+            /* SettingsFont - "Font" */
+            parent.addView(inflater.inflate(R.layout.activity_settings_font_child, null));
+            mSettingsFontFragment.Bind();
 
             /* SettingsComments - "Comments" */
-            parent.addView(
-                    getLayoutInflater().inflate(R.layout.activity_settings_comments_child, null));
-            new SettingsCommentsFragment(this, true);
+            parent.addView(inflater.inflate(R.layout.activity_settings_comments_child, null));
+            mSettingsCommentsFragment.Bind();
 
-            /* Link Handling */
+            /* SettingsHandling - "Link Handling" */
+            parent.addView(inflater.inflate(R.layout.activity_settings_handling_child, null));
+            mSettingsHandlingFragment.Bind();
 
-            /* History */
+            /* SettingsHistory - "History" */
+            parent.addView(inflater.inflate(R.layout.activity_settings_history_child, null));
+            mSettingsHistoryFragment.Bind();
 
             /* Data Saving */
+            parent.addView(inflater.inflate(R.layout.activity_settings_datasaving_child, null));
+            mSettingsDataFragment.Bind();
 
             /* Backup & Restore */
 

@@ -14,6 +14,8 @@ import me.ccrama.redditslide.R;
  */
 public class SettingsTheme extends BaseActivityAnim implements SettingsFragment.RestartActivity{
 
+    private SettingsThemeFragment fragment = new SettingsThemeFragment(this);
+
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         applyColorTheme();
@@ -23,7 +25,7 @@ public class SettingsTheme extends BaseActivityAnim implements SettingsFragment.
         ((ViewGroup) findViewById(R.id.settings_theme)).addView(
                 getLayoutInflater().inflate(R.layout.activity_settings_theme_child, null));
 
-        new SettingsThemeFragment(this, true);
+        fragment.Bind();
     }
 
     @Override

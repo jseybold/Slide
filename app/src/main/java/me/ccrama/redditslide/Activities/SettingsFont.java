@@ -12,6 +12,8 @@ import me.ccrama.redditslide.R;
  */
 public class SettingsFont extends BaseActivityAnim {
 
+    private SettingsFontFragment fragment = new SettingsFontFragment(this);
+
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         applyColorTheme();
@@ -21,7 +23,7 @@ public class SettingsFont extends BaseActivityAnim {
         ((ViewGroup) findViewById(R.id.settings_font)).addView(
                 getLayoutInflater().inflate(R.layout.activity_settings_font_child, null));
 
-        new SettingsFontFragment(this, true);
+        fragment.Bind();
     }
 
 }
