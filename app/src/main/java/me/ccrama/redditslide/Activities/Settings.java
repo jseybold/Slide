@@ -28,13 +28,13 @@ import android.widget.TextView;
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.google.common.base.Strings;
 
-
 import java.io.File;
 
 import me.ccrama.redditslide.Authentication;
 import me.ccrama.redditslide.DragSort.ReorderSubreddits;
 import me.ccrama.redditslide.FDroid;
 import me.ccrama.redditslide.Fragments.FolderChooserDialogCreate;
+import me.ccrama.redditslide.Fragments.SettingsBackupFragment;
 import me.ccrama.redditslide.Fragments.SettingsCommentsFragment;
 import me.ccrama.redditslide.Fragments.SettingsDataFragment;
 import me.ccrama.redditslide.Fragments.SettingsFontFragment;
@@ -58,6 +58,8 @@ public class Settings extends BaseActivity
         implements FolderChooserDialogCreate.FolderCallback, SettingsFragment.RestartActivity {
 
     private final static int RESTART_SETTINGS_RESULT = 2;
+    private final static int SETTINGS_BACKUP_OK_RESULT = 24;
+    private final static int SETTINGS_BACKUP_RESULT = 42;
     private       int                                                scrollY;
     private       SharedPreferences.OnSharedPreferenceChangeListener prefsListener;
     private       String                                             prev_text;
@@ -70,17 +72,15 @@ public class Settings extends BaseActivity
     private SettingsHandlingFragment mSettingsHandlingFragment = new SettingsHandlingFragment(this);
     private SettingsHistoryFragment  mSettingsHistoryFragment  = new SettingsHistoryFragment(this);
     private SettingsDataFragment     mSettingsDataFragment     = new SettingsDataFragment(this);
+    private SettingsBackupFragment   mSettingsBackupFragment   = new SettingsBackupFragment(this);
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == RESTART_SETTINGS_RESULT) {
-            Intent i = new Intent(Settings.this, Settings.class);
-            i.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-            i.putExtra("position", scrollY);
-            startActivity(i);
-            overridePendingTransition(0, 0);
-            finish();
-            overridePendingTransition(0, 0);
+            restartActivity();
+        } else if (requestCode == SETTINGS_BACKUP_RESULT ||
+                requestCode == SETTINGS_BACKUP_OK_RESULT) {
+            mSettingsBackupFragment.onActivityResult(requestCode, resultCode, data);
         }
     }
 
@@ -153,41 +153,11 @@ public class Settings extends BaseActivity
             mSettingsDataFragment.Bind();
 
             /* Backup & Restore */
+            parent.addView(inflater.inflate(R.layout.activity_settings_sync_child, null));
+            mSettingsBackupFragment.Bind();
 
             /* Go through each subview and scan it for matching text, non-matches */
-            Log.println(Log.DEBUG, "Settings", "settings_parent has " + String.valueOf(parent.getChildCount()) + " children");
-
-            for (int i=0; i<parent.getChildCount(); i++) {
-
-                Log.println(Log.DEBUG, "Settings", String.valueOf(i) + ": " + parent.getChildAt(i).toString());
-
-                /* Remove top-level TextView labels */
-                if (parent.getChildAt(i) instanceof TextView) {
-                    if (!((TextView) parent.getChildAt(i))
-                            .getText()
-                            .toString()
-                            .toLowerCase()
-                            .contains(text.toLowerCase())) {
-                        Log.println(Log.DEBUG, "Settings", "Removing TextView: " + ((TextView) parent.getChildAt(i)).getText());
-                        parent.removeView(parent.getChildAt(i));
-                        i--;
-                    }
-                }
-
-                /* Go through each ViewGroup and its children recursively,
-                   searching for a TextView with matching text
-                 */
-                else if (parent.getChildAt(i) instanceof ViewGroup) {
-                    loopViews((ViewGroup) parent.getChildAt(i), text.toLowerCase(), "");
-                }
-
-//                /* Get rid of any fluff that isn't an actual setting (ex. headers) */
-//                else {
-//                    Log.println(Log.DEBUG, "Settings", "    removing View: " + parent.getChildAt(i).toString());
-//                    parent.removeView(parent.getChildAt(i));
-//                    i--;
-//                }
-            }
+            loopViews(parent, text.toLowerCase(), true, "");
         }
 
         /* Try to clean up the mess we've made */
@@ -314,29 +284,19 @@ public class Settings extends BaseActivity
         ((EditText) findViewById(R.id.settings_search)).addTextChangedListener(new TextWatcher() {
 
             @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) { }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                Log.println(Log.DEBUG, "TEST", "You pressed " + s.toString() + ", prev_text is " + prev_text);
                 String text = s.toString().trim();
-
                 /* No idea why, but this event can fire many times when there is no change */
-                if (text.equalsIgnoreCase(prev_text)) {
-                    Log.println(Log.DEBUG, "TEST", "onTextChanged fired, but no change detected!");
-                    return;
-                } else {
-                    BuildLayout(text);
-                }
+                if (text.equalsIgnoreCase(prev_text)) return;
+                BuildLayout(text);
                 prev_text = text;
             }
 
             @Override
-            public void afterTextChanged(Editable editable) {
-
-            }
+            public void afterTextChanged(Editable editable) { }
         });
 
         findViewById(R.id.general).setOnClickListener(new OnSingleClickListener() {
@@ -615,8 +575,7 @@ public class Settings extends BaseActivity
 
     @Override
     public void onFolderSelection(@NonNull FolderChooserDialogCreate dialog, @NonNull File folder) {
-        SettingsGeneralFragment f = new SettingsGeneralFragment(this);
-        f.onFolderSelection(dialog, folder);
+        mSettingsGeneralFragment.onFolderSelection(dialog, folder);
     }
 
     @Override

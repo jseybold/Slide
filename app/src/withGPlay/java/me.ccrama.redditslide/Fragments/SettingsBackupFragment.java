@@ -10,6 +10,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
@@ -37,6 +38,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -76,6 +78,8 @@ public class SettingsBackupFragment
             mGoogleApiClient = new GoogleApiClient.Builder(context).addApi(Drive.API)
                     .addScope(Drive.SCOPE_FILE)
                     .addScope(Drive.SCOPE_APPFOLDER)
+//                    .addConnectionCallbacks((GoogleApiClient.ConnectionCallbacks) context)
+//                    .addOnConnectionFailedListener((GoogleApiClient.OnConnectionFailedListener) context)
                     .addConnectionCallbacks(this)
                     .addOnConnectionFailedListener(this)
                     .build();
@@ -122,7 +126,6 @@ public class SettingsBackupFragment
                 }
             });
 
-
             context.findViewById(R.id.restore).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -158,6 +161,7 @@ public class SettingsBackupFragment
 
                 }
             });
+
             context.findViewById(R.id.backfile).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -184,7 +188,6 @@ public class SettingsBackupFragment
                             .show();
                 }
             });
-
 
             context.findViewById(R.id.restorefile).setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -240,8 +243,6 @@ public class SettingsBackupFragment
                         i++;
                         title = a.getTitle();
                         new RetrieveDriveFileContentsAsyncTask(title).execute(a.getDriveId());
-
-
                     }
                     progress = new MaterialDialog.Builder(context)
                             .cancelable(false)
@@ -249,10 +250,9 @@ public class SettingsBackupFragment
                             .progress(false, i)
                             .build();
                     progress.show();
-
-
                 }
             };
+
     final private ResultCallback<DriveApi.MetadataBufferResult> newCallback2 =
             new ResultCallback<DriveApi.MetadataBufferResult>() {
                 @Override
@@ -409,7 +409,6 @@ public class SettingsBackupFragment
                     }
                 }
             };
-    private GoogleApiClient mGoogleApiClient;
 
     File file;
 
@@ -546,6 +545,7 @@ public class SettingsBackupFragment
     public void onConnected(Bundle bundle) {
         appFolder = Drive.DriveApi.getAppFolder(mGoogleApiClient);
         Drive.DriveApi.requestSync(mGoogleApiClient);
+        Log.println(Log.DEBUG, "Backup", "CONNECTED!!!");
     }
 
     @Override
@@ -555,8 +555,11 @@ public class SettingsBackupFragment
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
+        Log.println(Log.DEBUG, "Backup", "CONNECTION FAILED!!!" + String.valueOf(connectionResult.getErrorCode()));
+
         if (connectionResult.hasResolution()) {
             try {
+                Log.println(Log.DEBUG, "Backup", "CONNECTION FAILED!!!" + String.valueOf(connectionResult.getErrorCode()));
                 connectionResult.startResolutionForResult(context, 24);
             } catch (IntentSender.SendIntentException e) {
                 // Unable to resolve, message user appropriately
@@ -655,41 +658,43 @@ public class SettingsBackupFragment
         }
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == 24) {
-            if (resultCode == RESULT_OK) {
+            Log.println(Log.DEBUG, "Backup", "onActivityResult code 24!!!");
+            if (resultCode == SettingsBackup.RESULT_OK) {
+                Log.println(Log.DEBUG, "Backup", "RESULT_OK, connect()!!!");
                 mGoogleApiClient.connect();
             }
+            Log.println(Log.DEBUG, "Backup", "RESULT NOT OK!!! " +String.valueOf(resultCode));
         } else if (requestCode == 42) {
             progress =
-                    new MaterialDialog.Builder(SettingsBackup.this).title(R.string.backup_restoring)
+                    new MaterialDialog.Builder(context).title(R.string.backup_restoring)
                             .content(R.string.misc_please_wait)
                             .cancelable(false)
                             .progress(true, 1)
                             .build();
             progress.show();
 
-
             if (data != null) {
                 Uri fileUri = data.getData();
                 Log.v(LogUtil.getTag(), "WORKED! " + fileUri.toString());
 
-                File path = new File(fileUri.getPath());
                 StringWriter fw = new StringWriter();
                 try {
-                    FileReader fr = new FileReader(path);
-                    int c = fr.read();
+                    InputStream is = context.getContentResolver().openInputStream(fileUri);
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+                    int c = reader.read();
                     while (c != -1) {
                         fw.write(c);
-                        c = fr.read();
+                        c = reader.read();
                     }
                     String read = fw.toString();
+
                     if (read.contains("Slide_backupEND>")) {
 
                         String[] files = read.split("END>");
                         progress.dismiss();
-                        progress = new MaterialDialog.Builder(SettingsBackup.this).title(
+                        progress = new MaterialDialog.Builder(context).title(
                                 R.string.backup_restoring)
                                 .progress(false, files.length - 1)
                                 .cancelable(false)
@@ -701,7 +706,7 @@ public class SettingsBackupFragment
                             innerFile = innerFile.substring(innerFile.indexOf(">") + 1,
                                     innerFile.length());
 
-                            File newF = new File(getApplicationInfo().dataDir
+                            File newF = new File(context.getApplicationInfo().dataDir
                                     + File.separator
                                     + "shared_prefs"
                                     + File.separator
@@ -718,13 +723,13 @@ public class SettingsBackupFragment
                             }
 
                         }
-                        new AlertDialogWrapper.Builder(SettingsBackup.this)
+                        new AlertDialogWrapper.Builder(context)
                                 .setCancelable(false)
                                 .setTitle(R.string.backup_restore_settings)
                                 .setOnDismissListener(new DialogInterface.OnDismissListener() {
                                     @Override
                                     public void onDismiss(DialogInterface dialog) {
-                                        ProcessPhoenix.triggerRebirth(SettingsBackup.this);
+                                        ProcessPhoenix.triggerRebirth(context);
 
                                     }
                                 })
@@ -732,14 +737,14 @@ public class SettingsBackupFragment
                                 .setOnDismissListener(new DialogInterface.OnDismissListener() {
                                     @Override
                                     public void onDismiss(DialogInterface dialog) {
-                                        ProcessPhoenix.triggerRebirth(SettingsBackup.this);
+                                        ProcessPhoenix.triggerRebirth(context);
                                     }
                                 })
                                 .setPositiveButton(R.string.btn_ok,
                                         new DialogInterface.OnClickListener() {
                                             @Override
                                             public void onClick(DialogInterface dialog, int which) {
-                                                ProcessPhoenix.triggerRebirth(SettingsBackup.this);
+                                                ProcessPhoenix.triggerRebirth(context);
 
                                             }
                                         })
@@ -748,9 +753,9 @@ public class SettingsBackupFragment
 
                     } else {
                         progress.hide();
-                        new AlertDialogWrapper.Builder(SettingsBackup.this).setTitle(
-                                getString(me.ccrama.redditslide.R.string.err_not_valid_backup))
-                                .setMessage(getString(
+                        new AlertDialogWrapper.Builder(context).setTitle(
+                                context.getString(me.ccrama.redditslide.R.string.err_not_valid_backup))
+                                .setMessage(context.getString(
                                         me.ccrama.redditslide.R.string.err_not_valid_backup_msg))
                                 .setPositiveButton(R.string.btn_ok, null)
                                 .setCancelable(false)
@@ -759,9 +764,9 @@ public class SettingsBackupFragment
                 } catch (Exception e) {
                     progress.hide();
                     e.printStackTrace();
-                    new AlertDialogWrapper.Builder(SettingsBackup.this).setTitle(
-                            getString(me.ccrama.redditslide.R.string.err_file_not_found))
-                            .setMessage(getString(
+                    new AlertDialogWrapper.Builder(context).setTitle(
+                            context.getString(me.ccrama.redditslide.R.string.err_file_not_found))
+                            .setMessage(context.getString(
                                     me.ccrama.redditslide.R.string.err_file_not_found_msg))
                             .setPositiveButton(R.string.btn_ok, null)
                             .setCancelable(false)
@@ -769,22 +774,16 @@ public class SettingsBackupFragment
                 }
             } else {
                 progress.dismiss();
-                new AlertDialogWrapper.Builder(SettingsBackup.this).setTitle(
-                        getString(me.ccrama.redditslide.R.string.err_file_not_found))
+                new AlertDialogWrapper.Builder(context).setTitle(
+                        context.getString(me.ccrama.redditslide.R.string.err_file_not_found))
                         .setMessage(
-                                getString(me.ccrama.redditslide.R.string.err_file_not_found_msg))
+                                context.getString(me.ccrama.redditslide.R.string.err_file_not_found_msg))
                         .setPositiveButton(R.string.btn_ok, null)
                         .setCancelable(false)
                         .show();
             }
 
         }
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        if (SettingValues.tabletUI) mGoogleApiClient.connect();
     }
 
 }

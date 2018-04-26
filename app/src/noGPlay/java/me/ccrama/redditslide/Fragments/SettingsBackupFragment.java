@@ -8,23 +8,32 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.support.design.widget.Snackbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
 import com.afollestad.materialdialogs.AlertDialogWrapper;
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.jakewharton.processphoenix.ProcessPhoenix;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
+import me.ccrama.redditslide.Activities.SettingsBackup;
 import me.ccrama.redditslide.R;
 import me.ccrama.redditslide.SettingValues;
 import me.ccrama.redditslide.util.FileUtil;
+import me.ccrama.redditslide.util.LogUtil;
 
 public class SettingsBackupFragment {
 
@@ -237,6 +246,121 @@ public class SettingsBackupFragment {
                         .show();
             }
         }.execute();
-
     }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == 42) {
+            progress =
+                    new MaterialDialog.Builder(context).title(R.string.backup_restoring)
+                            .content(R.string.misc_please_wait)
+                            .cancelable(false)
+                            .progress(true, 1)
+                            .build();
+            progress.show();
+
+            if (data != null) {
+                Uri fileUri = data.getData();
+                Log.v(LogUtil.getTag(), "WORKED! " + fileUri.toString());
+
+                StringWriter fw = new StringWriter();
+                try {
+                    InputStream is = context.getContentResolver().openInputStream(fileUri);
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+                    int c = reader.read();
+                    while (c != -1) {
+                        fw.write(c);
+                        c = reader.read();
+                    }
+                    String read = fw.toString();
+
+                    if (read.contains("Slide_backupEND>")) {
+
+                        String[] files = read.split("END>");
+                        progress.dismiss();
+                        progress = new MaterialDialog.Builder(context).title(
+                                R.string.backup_restoring)
+                                .progress(false, files.length - 1)
+                                .build();
+                        progress.show();
+                        for (int i = 1; i < files.length; i++) {
+                            String innerFile = files[i];
+                            String t = innerFile.substring(6, innerFile.indexOf(">"));
+                            innerFile = innerFile.substring(innerFile.indexOf(">") + 1,
+                                    innerFile.length());
+
+                            File newF = new File(context.getApplicationInfo().dataDir
+                                    + File.separator
+                                    + "shared_prefs"
+                                    + File.separator
+                                    + t);
+                            Log.v(LogUtil.getTag(), "WRITING TO " + newF.getAbsolutePath());
+                            try {
+                                FileWriter newfw = new FileWriter(newF);
+                                BufferedWriter bw = new BufferedWriter(newfw);
+                                bw.write(innerFile);
+                                bw.close();
+                                progress.setProgress(progress.getCurrentProgress() + 1);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+
+                        }
+                        new AlertDialogWrapper.Builder(context).setCancelable(false)
+                                .setTitle(R.string.backup_restore_settings)
+                                .setOnDismissListener(new DialogInterface.OnDismissListener() {
+                                    @Override
+                                    public void onDismiss(DialogInterface dialog) {
+                                        ProcessPhoenix.triggerRebirth(context);
+
+                                    }
+                                })
+                                .setMessage(R.string.backup_restarting)
+                                .setOnDismissListener(new DialogInterface.OnDismissListener() {
+                                    @Override
+                                    public void onDismiss(DialogInterface dialog) {
+                                        ProcessPhoenix.triggerRebirth(context);
+                                    }
+                                })
+                                .setPositiveButton(R.string.btn_ok,
+                                        new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                ProcessPhoenix.triggerRebirth(context);
+                                            }
+                                        })
+                                .setCancelable(false)
+                                .show();
+
+                    } else {
+                        progress.hide();
+                        new AlertDialogWrapper.Builder(context).setTitle(
+                                R.string.err_not_valid_backup)
+                                .setMessage(R.string.err_not_valid_backup_msg)
+                                .setPositiveButton(R.string.btn_ok, null)
+                                .setCancelable(false)
+                                .show();
+                    }
+                } catch (Exception e) {
+                    progress.hide();
+                    e.printStackTrace();
+                    new AlertDialogWrapper.Builder(context).setTitle(
+                            R.string.err_file_not_found)
+                            .setMessage(R.string.err_file_not_found_msg)
+                            .setPositiveButton(R.string.btn_ok, null)
+                            .show();
+                }
+
+            } else {
+                progress.dismiss();
+                new AlertDialogWrapper.Builder(context).setTitle(
+                        R.string.err_file_not_found)
+                        .setMessage(R.string.err_file_not_found_msg)
+                        .setPositiveButton(R.string.btn_ok, null)
+                        .setCancelable(false)
+                        .show();
+            }
+
+        }
+    }
+
 }
